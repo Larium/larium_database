@@ -1,0 +1,14 @@
+<?php
+
+use Larium\Database\AdapterInterface;
+
+$config = array(
+    'host'     => 'localhost',
+    'port'     => 3306,
+    'adapter'  => 'Mysql',
+    'database' => 'database',
+    'username' => 'user',
+    'password' => 'pass',
+    'charset'  => 'utf8',
+    'fetch'    => AdapterInterface::FETCH_OBJ,
+);

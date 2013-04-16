@@ -1,0 +1,149 @@
+<?php 
+
+/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+
+namespace Larium\Database\Mysql;
+
+require_once "test_init.php";
+
+use Larium\Database\AdapterFactory;
+
+class QueryBuilderTest extends \PHPUnit_Framework_TestCase
+{
+
+    protected $adapter;
+
+    public function setUp()
+    {
+        $config = (new \Config())->getDatabase();
+        
+        $this->adapter = AdapterFactory::create($config);
+    }
+    
+    public function testSelectQuery()
+    {
+        $query = $this->adapter->createQuery()
+            ->select('id, cars.name')
+            ->from('cars')
+            ->where(array('id'=>1));
+
+        $this->assertEquals(
+            $query->toRealSql(), 
+            "SELECT `cars`.id, `cars`.name FROM `cars` WHERE `cars`.id = 1"
+        );
+    }
+
+    public function testWhereQuery()
+    {
+        $query = $this->adapter->createQuery()
+            ->from('cars')
+            ->where(array('id'=>1));
+
+        $this->assertEquals(
+            $query->toRealSql(), 
+            "SELECT * FROM `cars` WHERE `cars`.id = 1"
+        );
+    }
+
+    public function testAndWhereQuery()
+    {
+        $query = $this->adapter->createQuery()
+            ->from('cars')
+            ->where(array('id'=>1, 'name'=>'test'))
+            ->andWhere(array('user_id'=>1));
+
+        $this->assertEquals(
+            $query->toRealSql(), 
+            "SELECT * FROM `cars` WHERE `cars`.id = 1 AND `cars`.name = 'test' AND `cars`.user_id = 1"
+        );
+    }
+
+    public function testOrWhereQuery()
+    {
+        $query = $this->adapter->createQuery()
+            ->from('cars')
+            ->where(array('id'=>1))
+            ->orWhere(array('name'=>'test'));
+
+        $this->assertEquals(
+            $query->toRealSql(), 
+            "SELECT * FROM `cars` WHERE `cars`.id = 1 OR `cars`.name = 'test'"
+        );
+    }
+
+    public function testInQuery()
+    {
+        $query = $this->adapter->createQuery()
+            ->from('cars')
+            ->where(array('id'=>array(1,2,3,4)));
+
+        $this->assertEquals(
+            $query->toRealSql(), 
+            "SELECT * FROM `cars` WHERE `cars`.id IN ( 1, 2, 3, 4 )"
+        );
+    }
+
+    public function testIsNullQuery()
+    {
+        $query = $this->adapter->createQuery()
+            ->from('cars')
+            ->where(array('id'=>1))
+            ->whereIsNull('name')
+            ->whereIsNotNull('color', 'OR');
+
+        $this->assertEquals(
+            $query->toRealSql(), 
+            "SELECT * FROM `cars` WHERE `cars`.id = 1 AND `cars`.name IS NULL OR `cars`.color IS NOT NULL"
+        );
+    }
+
+    public function testComparisonOperator()
+    {
+        $query = $this->adapter->createQuery()
+            ->from('cars')
+            ->where(array('id'=>1), 'AND', '>');
+
+        $this->assertEquals(
+            $query->toRealSql(), 
+            "SELECT * FROM `cars` WHERE `cars`.id > 1"
+        );
+    }
+
+    public function testWhereCase()
+    {
+        $query = $this->adapter->createQuery()
+            ->from('cars')
+            ->where(array('id = ?', 1));
+
+        $this->assertEquals(
+            $query->toRealSql(), 
+            "SELECT * FROM `cars` WHERE id = 1"
+        );
+    }
+    
+    public function testWhereLikeAndAlias()
+    {
+        $query = $this->adapter->createQuery()
+            ->select('id, name')
+            ->from('cars', 'c')
+            ->whereLike('name', '%name%');
+
+        $this->assertEquals(
+            $query->toRealSql(), 
+            "SELECT `c`.id, `c`.name FROM `cars` as c WHERE `c`.name like '%name%'"
+        );
+    }
+
+    public function testMultipleFields()
+    {
+        $query = $this->adapter->createQuery()
+            ->select('c.id, c.name, d.name, d.id')
+            ->from('cars', 'c')
+            ->innerJoin('drivers as d', 'd.id', 'c.driver_id');
+
+        $this->assertEquals(
+            $query->toRealSql(), 
+            "SELECT `c`.id, `c`.name, `d`.name, `d`.id FROM `cars` as c INNER JOIN `drivers as d` ON (`d`.id = `c`.driver_id)"
+        );
+    }
+}

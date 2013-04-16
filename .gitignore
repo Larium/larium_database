@@ -1,0 +1,4 @@
+vendor/*
+test/log/*
+test/database.conf.php
+src/Larium/Database/PdoIterator.php
