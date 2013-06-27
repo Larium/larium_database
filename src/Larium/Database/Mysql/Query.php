@@ -187,6 +187,20 @@ class Query implements QueryInterface
         return $this;
     }
 
+    public function clearSelect()
+    {
+        $this->select = null;
+
+        return $this;
+    }
+
+    public function clearGroup()
+    {
+        $this->group_by = null;
+
+        return $this;
+    }
+
     public function from($table, $alias = null)
     {
         $this->table = $table;
@@ -462,7 +476,12 @@ class Query implements QueryInterface
             }
             
             if (isset($table)) {
-                $select[] = $this->apostrophe($table) . ".{$column}";
+				// Checks for Mysql functions and don't prepend table name.
+                if (preg_match('/[\w]+\(.*\)/', $column)) {
+                    $select[] = $column;
+                } else {
+                    $select[] = $this->apostrophe($table) . ".{$column}";
+                }
             }
         }
         
@@ -495,13 +514,15 @@ class Query implements QueryInterface
         }
 
         if (  !empty($this->join_conditions) 
-            && null == $this->select
+            && null === $this->select
         ) {
-            $this->select = $this->apostrophe($this->getTable()) . ".*";
-            $query .= ($aggregate ? ', ' : null) . $this->select;
+            if (false === $aggregate) {
+                $this->select = $this->apostrophe($this->getTable()) . ".*";
+            }
+            $query .= ($aggregate && $this->select ? ', ' : null) . $this->select;
         }
  
-        $query .= null == $this->select ? '*' : null;
+        $query .= null == $this->select && $aggregate == false ? '*' : null;
 
         // FROM
         $query .= " FROM ".$this->apostrophe($this->getTable());
@@ -625,7 +646,7 @@ class Query implements QueryInterface
         $where = $this->build_where();
 
         $this->query = "UPDATE {$this->apostrophe($table)} SET {$data} WHERE {$where}";
-        
+
         return $this->adapter->execute($this, 'Update');
     }
 
@@ -643,8 +664,7 @@ class Query implements QueryInterface
         $this->query = "DELETE FROM {$this->apostrophe($table)} WHERE {$where}";
 
         return $this->adapter
-            ->execute($this, 'Destroy')
-            ->affected_rows;
+            ->execute($this, 'Destroy');
     }
 
     public function __toString()
