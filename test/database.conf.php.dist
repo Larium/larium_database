@@ -1,6 +1,6 @@
 <?php
 
-use Larium\Database\AdapterInterface;
+use Larium\Database\Mysql\Adapter;
 
 $config = array(
     'host'     => 'localhost',

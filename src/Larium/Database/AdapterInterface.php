@@ -6,12 +6,9 @@ namespace Larium\Database;
 
 interface AdapterInterface
 {
-    const FETCH_ASSOC = 2;
-
-    const FETCH_OBJ = 5;
 
     /**
-     * Creates a connection between PHP and Mysql 
+     * Creates a connection between PHP and database. 
      * 
      * @throws \Exception
      *
@@ -54,7 +51,7 @@ interface AdapterInterface
     public function getInsertId($stmt = null);
 
     /**
-     * Returns the connection between PHP and Mysql.
+     * Returns the connection between PHP and database.
      */
     public function getConnection();
 }

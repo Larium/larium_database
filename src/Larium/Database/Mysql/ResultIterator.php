@@ -4,7 +4,6 @@
 
 namespace Larium\Database\Mysql;
 
-use Larium\Database\AdapterInterface;
 use Larium\Database\ResultIteratorInterface;
 
 class ResultIterator implements ResultIteratorInterface, \ArrayAccess
@@ -14,15 +13,15 @@ class ResultIterator implements ResultIteratorInterface, \ArrayAccess
     
     private $index = 0;
 
-    private $fetch_style = AdapterInterface::FETCH_OBJ;
+    private $fetch_style = Adapter::FETCH_OBJ;
     
     private $object = '\\stdClass';
 
     private $arg;
 
     private $fetch_methods = array(
-        AdapterInterface::FETCH_OBJ   => 'fetch_object',
-        AdapterInterface::FETCH_ASSOC => 'fetch_array',
+        Adapter::FETCH_OBJ   => 'fetch_object',
+        Adapter::FETCH_ASSOC => 'fetch_array',
     );
 
     /**
@@ -38,7 +37,7 @@ class ResultIterator implements ResultIteratorInterface, \ArrayAccess
      */
     public function __construct(
         \mysqli_result $result_set, 
-        $fetch_style = AdapterInterface::FETCH_OBJ,
+        $fetch_style = Adapter::FETCH_OBJ,
         $object = '\\stdClass'
     ) {
         
@@ -46,7 +45,7 @@ class ResultIterator implements ResultIteratorInterface, \ArrayAccess
         $this->fetch_style = $fetch_style ?: $this->fetch_style; 
         $this->object = $object ?: '\\stdClass';
 
-        if (AdapterInterface::FETCH_ASSOC === $fetch_style) {
+        if (Adapter::FETCH_ASSOC === $fetch_style) {
             $this->arg = \MYSQLI_ASSOC;
         } else {
             $this->arg = $this->object;

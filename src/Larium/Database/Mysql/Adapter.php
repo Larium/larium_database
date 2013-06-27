@@ -16,6 +16,10 @@ use Larium\Database\QueryInterface;
 class Adapter implements AdapterInterface
 {
 
+    const FETCH_ASSOC = 2;
+
+    const FETCH_OBJ = 5;
+
     /**
      * An array with configuration data for this adapter
      * 
