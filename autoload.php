@@ -1,21 +1,16 @@
 <?php
 
-spl_autoload_register('autoload_larium_database');
+require_once 'ClassMap.php';
 
-function autoload_larium_database($class) {
-    $base = __DIR__ . "/src/"; 
-    $classes = array(
-        'Larium\\Database\\Mysql\\Adapter'  => $base . "Larium/Database/Mysql/Adapter.php",
-        'Larium\\Database\\Mysql\\Query'  => $base . "Larium/Database/Mysql/Query.php",
-        'Larium\\Database\\Mysql\\ResultIterator'  => $base . "Larium/Database/Mysql/ResultIterator.php",
-        'Larium\\Database\\AdapterFactory'  => $base . "Larium/Database/AdapterFactory.php",
-        'Larium\\Database\\AdapterInterface'  => $base . "Larium/Database/AdapterInterface.php",
-        'Larium\\Database\\QueryInterface'  => $base . "Larium/Database/QueryInterface.php",
-        'Larium\\Database\\ResultIteratorInterface'  => $base . "Larium/Database/ResultIteratorInterface.php",
-        'Larium\\Database\\Logger'  => $base . "Larium/Database/Logger.php",
-    );
-    
-    array_key_exists($class, $classes) 
-        ? require_once $classes[$class]
-        : false;
-}
+$classes = array(
+    'Larium\\Database\\Mysql\\Adapter'          => "Larium/Database/Mysql/Adapter.php",
+    'Larium\\Database\\Mysql\\Query'            => "Larium/Database/Mysql/Query.php",
+    'Larium\\Database\\Mysql\\ResultIterator'   => "Larium/Database/Mysql/ResultIterator.php",
+    'Larium\\Database\\AdapterFactory'          => "Larium/Database/AdapterFactory.php",
+    'Larium\\Database\\AdapterInterface'        => "Larium/Database/AdapterInterface.php",
+    'Larium\\Database\\QueryInterface'          => "Larium/Database/QueryInterface.php",
+    'Larium\\Database\\ResultIteratorInterface' => "Larium/Database/ResultIteratorInterface.php",
+    'Larium\\Database\\Logger'                  => "Larium/Database/Logger.php",
+);
+
+ClassMap::load(__DIR__ . "/src/", $classes)->register();
