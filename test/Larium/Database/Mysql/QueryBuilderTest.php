@@ -4,8 +4,6 @@
 
 namespace Larium\Database\Mysql;
 
-require_once "test_init.php";
-
 use Larium\Database\AdapterFactory;
 
 class QueryBuilderTest extends \PHPUnit_Framework_TestCase
