@@ -44,7 +44,7 @@ class Logger extends \SplFileObject
         static::getLogger()->log($buffer);
     }
 
-    public static function getLogger($filename, $open_mode="a")
+    public static function getLogger($filename=null, $open_mode="a")
     {
         if (static::$logger_instance){
             return static::$logger_instance;
