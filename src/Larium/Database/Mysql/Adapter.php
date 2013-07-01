@@ -143,6 +143,10 @@ class Adapter implements AdapterInterface
         $params = $query->getBindParams();
         
         $stmt = $this->prepare($query->toSql());
+        
+        if (false === $stmt) {
+            throw new \Exception($this->getConnection()->error);
+        }
         $this->bind_params($stmt, $params);
         
         $this->real_query = $query->toRealSql();
