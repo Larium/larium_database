@@ -22,17 +22,17 @@ class Adapter implements AdapterInterface
 
     /**
      * An array with configuration data for this adapter
-     * 
+     *
      * Possible values are
      *
      * host         the host name or an IP address of MySQL server
-     * port         Specifies the port number to attempt to connect to the MySQL 
+     * port         Specifies the port number to attempt to connect to the MySQL
      *              server.
      * database     the database name to connect.
      * username     the user that has access to this database
      * password     password for this user
      * charset      the default client character set
-     * fetch        the default fetch style for the result set row. 
+     * fetch        the default fetch style for the result set row.
      *              Possible values are:
      *              AdapterInterface::FETCH_ASSOC || AdapterInterface::FETCH_OBJ
      *
@@ -74,7 +74,7 @@ class Adapter implements AdapterInterface
      *
      * @param array $config
      */
-    public function __construct(array $config) 
+    public function __construct(array $config)
     {
         $this->config = $config;
     }
@@ -101,12 +101,12 @@ class Adapter implements AdapterInterface
         if ( null === $this->connection ) {
 
             extract($this->config);
-            
+
             $this->connection = new \mysqli(
-                $host, 
-                $username, 
-                $password, 
-                $database, 
+                $host,
+                $username,
+                $password,
+                $database,
                 $port
             );
 
@@ -117,13 +117,13 @@ class Adapter implements AdapterInterface
             if (isset($fetch)) {
                 $this->fetch_style = $fetch;
             }
-            
+
             if (isset($charset)) {
                 $this->connection->set_charset($charset);
             }
         }
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -136,33 +136,33 @@ class Adapter implements AdapterInterface
     /**
      * {@inheritdoc}
      *
-     * @return int|ResultIterator 
+     * @return int|ResultIterator
      */
-    public function execute(QueryInterface $query, $action='Load') 
+    public function execute(QueryInterface $query, $action='Load')
     {
         $params = $query->getBindParams();
-        
+
         $stmt = $this->prepare($query->toSql());
-        
+
         if (false === $stmt) {
             throw new \Exception($this->getConnection()->error);
         }
         $this->bind_params($stmt, $params);
-        
+
         $this->real_query = $query->toRealSql();
-        
+
         $start = microtime(true);
-        
+
         $stmt->execute();
-        
+
         if ($this->logger) {
             $this->getLogger()->logQuery(
-                $this->real_query, 
-                $query->getObject(), 
-                (microtime(true) - $start), 
+                $this->real_query,
+                $query->getObject(),
+                (microtime(true) - $start),
                 $action
             );
-        } 
+        }
 
         $this->query_array[] = $this->real_query;
 
@@ -178,18 +178,18 @@ class Adapter implements AdapterInterface
                 break;
             case $stmt->insert_id === 0 && $stmt->affected_rows ===-1:
                 // SELECT statement
-                
+
                 $iterator = new ResultIterator(
                     $stmt->get_result(),
                     $this->fetch_style,
                     $query->getObject()
                 );
-                
+
                 return $iterator;
                 break;
             default:
                 // UPDATE, DELETE statement
-                
+
                 return $stmt->affected_rows;
                 break;
         }
@@ -219,7 +219,7 @@ class Adapter implements AdapterInterface
     {
         if (null === $value) {
             $value = 'NULL';
-            
+
             return;
         }
 
@@ -231,12 +231,7 @@ class Adapter implements AdapterInterface
     {
         //if (substr_count($string, "'") == 2) return $string;
 
-        return "'" . $string . "'";       
-    }
-
-    public function createCollection($data=array(), $object=null)
-    {
-        return new Collection(new \ArrayIterator($data), $object);
+        return "'" . $string . "'";
     }
 
     public function setLogger($logger)
@@ -260,7 +255,7 @@ class Adapter implements AdapterInterface
     }
 
     protected function prepare($query=null)
-    { 
+    {
         $query = $query ?: $this->query;
 
         $stmt = $this->getConnection()->prepare($query);
@@ -287,9 +282,9 @@ class Adapter implements AdapterInterface
             $ref = array();
 
             foreach($params as $key=>$value) {
-                $types .= is_float($value) 
+                $types .= is_float($value)
                     ? 'd' : (is_int($value) ? 'i' : (is_string($value) ? 's' : 'b'));
-                $ref[$key] = &$params[$key]; 
+                $ref[$key] = &$params[$key];
             }
             array_unshift($params, $types);
             $method = new \ReflectionMethod($stmt, 'bind_param');
