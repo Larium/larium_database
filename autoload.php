@@ -11,6 +11,7 @@ $classes = array(
     'Larium\\Database\\QueryInterface'          => "Larium/Database/QueryInterface.php",
     'Larium\\Database\\ResultIteratorInterface' => "Larium/Database/ResultIteratorInterface.php",
     'Larium\\Database\\Logger'                  => "Larium/Database/Logger.php",
+    'Larium\\Database\\Mysql\\Paginator'        => "Larium/Database/Mysql/Paginator.php",
 );
 
 ClassMap::load(__DIR__ . "/src/", $classes)->register();

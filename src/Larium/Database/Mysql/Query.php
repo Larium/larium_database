@@ -14,6 +14,9 @@ use Larium\Database\QueryInterface;
  */
 class Query implements QueryInterface
 {
+    const HYDRATE_ARRAY = 2;
+
+    const HYDRATE_OBJ = 5;
 
     /**
      * Available aggregate functions for MySQL
@@ -247,10 +250,12 @@ class Query implements QueryInterface
         return $this;
     }
 
-    public function limit($count, $offset=0)
+    public function limit($count, $offset=false)
     {
         $this->limit = (int) $count;
-        $this->offset($offset);
+        if ($offset !== false || null === $this->offset) {
+            $this->offset($offset);
+        }
         return $this;
     }
 
@@ -567,21 +572,21 @@ class Query implements QueryInterface
 
     /*- (Fetching methods) ------------------------------------------------- */
 
-    public function fetchAll()
+    public function fetchAll($hydration = null)
     {
-        return $this->fetch_data('all');
+        return $this->fetch_data('all', $hydration);
     }
 
-    public function fetch()
+    public function fetch($hydration = null)
     {
-        return $this->fetch_data('one');
+        return $this->fetch_data('one', $hydration);
     }
 
-    protected function fetch_data($mode)
+    protected function fetch_data($mode, $hydration = null)
     {
         $this->build_sql();
 
-        $iterator = $this->adapter->execute($this);
+        $iterator = $this->adapter->execute($this, 'Load', $hydration);
 
         if ('all' == $mode) {
 
@@ -717,5 +722,21 @@ class Query implements QueryInterface
     protected function apostrophe($table)
     {
         return "`{$table}`";
+    }
+
+    public function paginate($request, $per_page = 20)
+    {
+        $total_query = clone $this;
+        $total = $total_query->count('*','total_count')->fetch()->total_count;
+        $page = Paginator::page($request, $total, $per_page);
+
+        $results = $this->forPage($page, $per_page)->fetchAll();
+
+        return Paginator::make($results, $total, $per_page, $request);
+    }
+
+    public function forPage($page, $per_page)
+    {
+        return $this->offset(($page-1) * $per_page)->limit($per_page);
     }
 }

@@ -138,7 +138,7 @@ class Adapter implements AdapterInterface
      *
      * @return int|ResultIterator
      */
-    public function execute(QueryInterface $query, $action='Load')
+    public function execute(QueryInterface $query, $action='Load', $hydration = null)
     {
         $params = $query->getBindParams();
 
@@ -179,9 +179,13 @@ class Adapter implements AdapterInterface
             case $stmt->insert_id === 0 && $stmt->affected_rows ===-1:
                 // SELECT statement
 
+                if (Query::HYDRATE_OBJ == $hydration) {
+                    $this->fetch_style = self::FETCH_OBJ;
+                }
+
                 $iterator = new ResultIterator(
                     $stmt->get_result(),
-                    $this->fetch_style,
+                    $hydration ?: $this->fetch_style,
                     $query->getObject()
                 );
 

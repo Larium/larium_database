@@ -8,13 +8,13 @@ use Larium\Database\ResultIteratorInterface;
 
 class ResultIterator implements ResultIteratorInterface, \ArrayAccess
 {
-    
+
     protected $result_set;
-    
+
     private $index = 0;
 
     private $fetch_style = Adapter::FETCH_OBJ;
-    
+
     private $object = '\\stdClass';
 
     private $arg;
@@ -25,24 +25,24 @@ class ResultIterator implements ResultIteratorInterface, \ArrayAccess
     );
 
     /**
-     * 
-     * @param \mysqli_result $result_set 
-     * @param int            $fetch_style AdapterInterface::FETCH_OBJ or 
+     *
+     * @param \mysqli_result $result_set
+     * @param int            $fetch_style AdapterInterface::FETCH_OBJ or
      *                                    AdapterInterface::FETCH_ASSOC
-     * @param mixed          $object      the name of the class to instantiate 
-     *                                    when fetch style is 
+     * @param mixed          $object      the name of the class to instantiate
+     *                                    when fetch style is
      *                                    AdapterInterface::FETCH_OBJ
-     * 
+     *
      * @return ResultIterator
      */
     public function __construct(
-        \mysqli_result $result_set, 
+        \mysqli_result $result_set,
         $fetch_style = Adapter::FETCH_OBJ,
         $object = '\\stdClass'
     ) {
-        
+
         $this->result_set = $result_set;
-        $this->fetch_style = $fetch_style ?: $this->fetch_style; 
+        $this->fetch_style = $fetch_style ?: $this->fetch_style;
         $this->object = $object ?: '\\stdClass';
 
         if (Adapter::FETCH_ASSOC === $fetch_style) {
@@ -63,7 +63,7 @@ class ResultIterator implements ResultIteratorInterface, \ArrayAccess
 
     public function key()
     {
-        return $this->index; 
+        return $this->index;
     }
 
     public function next()
@@ -78,7 +78,7 @@ class ResultIterator implements ResultIteratorInterface, \ArrayAccess
 
     public function valid()
     {
-        return $this->key() < $this->count(); 
+        return $this->key() < $this->count();
     }
 
     public function count()
@@ -108,6 +108,22 @@ class ResultIterator implements ResultIteratorInterface, \ArrayAccess
     public function offsetUnset($key)
     {
         return false;
+    }
+
+    public function getResultSet()
+    {
+        return $this->result_set;
+    }
+
+    public function getResult()
+    {
+        $result = array();
+        
+        foreach ($this as $row) {
+            $result[] = $row;
+        }
+        
+        return $result;
     }
 
     public function __destruct()
