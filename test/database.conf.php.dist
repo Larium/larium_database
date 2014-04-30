@@ -10,5 +10,5 @@ $config = array(
     'username' => 'user',
     'password' => 'pass',
     'charset'  => 'utf8',
-    'fetch'    => AdapterInterface::FETCH_OBJ,
+    'fetch'    => Adapter::FETCH_OBJ,
 );
