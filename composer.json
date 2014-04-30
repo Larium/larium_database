@@ -1,0 +1,23 @@
+{
+    "name": "larium/database",
+    "description": "Database Abstraction Layer",
+    "keywords": ["database"],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Andreas Kollaros",
+            "email": "andreas.kollaros@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3",
+        "ext-mysqli": "*"
+    },
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-0": {
+            "Larium\\": "src/"
+        }
+    }
+}
