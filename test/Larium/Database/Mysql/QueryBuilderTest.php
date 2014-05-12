@@ -196,4 +196,16 @@ class QueryBuilderTest extends \PHPUnit_Framework_TestCase
             "DELETE FROM `cars` WHERE `cars`.id = 1"
         );
     }
+
+    public function testNullValues()
+    {
+        $query = $this->adapter->createQuery()
+            ->from('cars')
+            ->where(array('id'=>1, 'name' => null));
+
+        $this->assertEquals(
+            $query->toRealSql(),
+            "SELECT * FROM `cars` WHERE `cars`.id = 1 AND `cars`.name IS NULL"
+        );
+    }
 }
