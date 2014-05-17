@@ -323,6 +323,9 @@ class Query implements QueryInterface
                 if (is_array($value)) {
 
                     $this->whereIn($key, $value, $operator);
+                } elseif (is_null($value)) {
+
+                    $this->whereIsNull($key, $operator);
                 } else {
 
                     $field = $this->get_field_with_table($key);
