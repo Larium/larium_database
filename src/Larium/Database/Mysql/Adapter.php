@@ -68,6 +68,7 @@ class Adapter implements AdapterInterface
      */
     protected $query_array = array();
 
+    private $real_query;
 
     /**
      * Creates an Adapter instance using an array of options.
