@@ -297,12 +297,12 @@ class Query implements QueryInterface
      *
      * Example 1:
      * <code>
-     *      Object::find()->where(array('id = ? and username = ?', '1', 'John'))
+     *      $query->where(array('id = ? and username = ?', '1', 'John'))
      * </code>
      *
      * Example 2:
      * <code>
-     *      Object::find()->where(array('id'=>array('1','2'), 'name' =>'John'))
+     *      $query->where(array('id'=>array('1','2'), 'name' => 'John'))
      * </code>
      *
      * @param array  $conditions
@@ -356,7 +356,7 @@ class Query implements QueryInterface
             $field = $this->apostrophe($this->getTableAlias()) . ".$string";
         } else {
             $table = substr($string, 0, $point);
-            $field = str_replace($table, $this->apostrophe($table), $string);
+            $field = str_replace($table.'.', $this->apostrophe($table).'.', $string);
         }
 
         return $field;

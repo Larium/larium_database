@@ -145,6 +145,20 @@ class QueryBuilderTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testMultipleFieldsWithWhere()
+    {
+        $query = $this->adapter->createQuery()
+            ->select('c.id, c.name, d.name, d.id')
+            ->from('cars', 'c')
+            ->innerJoin('drivers as d', 'd.id', 'c.driver_id')
+            ->where(array('d.id' => 1));
+
+        $this->assertEquals(
+            $query->toRealSql(),
+            "SELECT `c`.id, `c`.name, `d`.name, `d`.id FROM `cars` as c INNER JOIN `drivers` as d ON (`d`.id = `c`.driver_id) WHERE `d`.id = 1"
+        );
+    }
+
     public function testInsertData()
     {
         $query = $this->adapter->createQuery();
