@@ -141,7 +141,7 @@ class QueryBuilderTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(
             $query->toRealSql(),
-            "SELECT `c`.id, `c`.name, `d`.name, `d`.id FROM `cars` as c INNER JOIN `drivers as d` ON (`d`.id = `c`.driver_id)"
+            "SELECT `c`.id, `c`.name, `d`.name, `d`.id FROM `cars` as c INNER JOIN `drivers` as d ON (`d`.id = `c`.driver_id)"
         );
     }
 
