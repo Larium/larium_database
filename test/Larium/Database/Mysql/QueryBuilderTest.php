@@ -137,11 +137,11 @@ class QueryBuilderTest extends \PHPUnit_Framework_TestCase
         $query = $this->adapter->createQuery()
             ->select('c.id, c.name, d.name, d.id')
             ->from('cars', 'c')
-            ->innerJoin('drivers as d', 'd.id', 'c.driver_id');
+            ->innerJoin('passengers as d', 'd.id', 'c.passengers_id');
 
         $this->assertEquals(
             $query->toRealSql(),
-            "SELECT `c`.id, `c`.name, `d`.name, `d`.id FROM `cars` as c INNER JOIN `drivers` as d ON (`d`.id = `c`.driver_id)"
+            "SELECT `c`.id, `c`.name, `d`.name, `d`.id FROM `cars` as c INNER JOIN `passengers` as d ON (`d`.id = `c`.passengers_id)"
         );
     }
 

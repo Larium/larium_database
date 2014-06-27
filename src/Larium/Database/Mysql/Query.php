@@ -167,8 +167,8 @@ class Query implements QueryInterface
         list($pri_table, $pri_field) = explode('.', $primary_key);
         list($for_table, $for_field) = explode('.', $foreign_key);
         $as = null;
-        if (false !== strpos($join_table, 'as')) {
-            list($join_table, $as) = explode('as', $join_table);
+        if (false !== strpos($join_table, ' as ')) {
+            list($join_table, $as) = explode(' as ', $join_table);
             $join_table = trim($join_table);
             $as = trim($as);
             $as = " as {$as}";
