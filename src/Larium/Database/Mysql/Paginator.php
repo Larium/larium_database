@@ -199,7 +199,7 @@ class Paginator {
 
 		$content = $this->previous().' '.$links.' '.$this->next();
 
-        return '<div class="pagination"><ul>'.$content.'</ul></div>';
+        return '<ul class="pagination">'.$content.'</ul>';
 	}
 
 	/**
