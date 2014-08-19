@@ -518,9 +518,10 @@ class Query implements QueryInterface
         $aggregate = false;
 
         if (!empty($this->aggregate)) {
+            $query .= (null === $this->select ? null : ", ");
+
             foreach ($this->aggregate as $a) {
-                $aggr[] = (null === $this->select ? null : ", ")
-                    .$a['function']
+                $aggr[] = $a['function']
                     ."({$a['field']})"
                     .(isset($a['as']) ? ' as '.$a['as'] : null);
             }

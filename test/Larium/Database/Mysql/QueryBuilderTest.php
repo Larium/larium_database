@@ -222,4 +222,33 @@ class QueryBuilderTest extends \PHPUnit_Framework_TestCase
             "SELECT * FROM `cars` WHERE `cars`.id = 1 AND `cars`.name IS NULL"
         );
     }
+
+    public function testAggregateMethods()
+    {
+        $query = $this->adapter->createQuery()
+            ->count('DISTINCT cars.id', 'total')
+            ->group_concat('DISTINCT cars.id', 'my_group')
+            ->from('cars')
+            ->where(array('id'=>1, 'name' => null));
+
+        $this->assertEquals(
+            $query->toRealSql(),
+            "SELECT COUNT(DISTINCT cars.id) as total, GROUP_CONCAT(DISTINCT cars.id) as my_group FROM `cars` WHERE `cars`.id = 1 AND `cars`.name IS NULL"
+        );
+    }
+
+    public function testAggregateMethodsWithSelect()
+    {
+        $query = $this->adapter->createQuery()
+            ->select('id')
+            ->count('DISTINCT cars.id', 'total')
+            ->group_concat('DISTINCT cars.id', 'my_group')
+            ->from('cars')
+            ->where(array('id'=>1, 'name' => null));
+
+        $this->assertEquals(
+            $query->toRealSql(),
+            "SELECT `cars`.id, COUNT(DISTINCT cars.id) as total, GROUP_CONCAT(DISTINCT cars.id) as my_group FROM `cars` WHERE `cars`.id = 1 AND `cars`.name IS NULL"
+        );
+    }
 }
