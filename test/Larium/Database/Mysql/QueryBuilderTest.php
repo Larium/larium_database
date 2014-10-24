@@ -31,6 +31,19 @@ class QueryBuilderTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testSelectWithCountQuery()
+    {
+        $query = $this->adapter->createQuery()
+            ->from('cars')
+            ->where(array('id'=>1))
+            ->count('DISTINCT id', 'totalCount');
+
+        $this->assertEquals(
+            $query->toRealSql(),
+            "SELECT COUNT(DISTINCT id) as totalCount FROM `cars` WHERE `cars`.id = 1"
+        );
+    }
+
     public function testWhereQuery()
     {
         $query = $this->adapter->createQuery()
