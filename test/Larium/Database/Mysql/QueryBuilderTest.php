@@ -176,12 +176,12 @@ class QueryBuilderTest extends \PHPUnit_Framework_TestCase
     {
         $query = $this->adapter->createQuery();
         $adapter = $query->prepareInsert(
-                'cars',
-                array(
-                    'name' => 'car_name',
-                    'brand' => 'brand_name'
-                )
-            );
+            'cars',
+            array(
+                'name' => 'car_name',
+                'brand' => 'brand_name'
+            )
+        );
 
         $this->assertEquals(
             $query->toRealSql(),
@@ -193,14 +193,14 @@ class QueryBuilderTest extends \PHPUnit_Framework_TestCase
     {
         $query = $this->adapter->createQuery();
         $adapter = $query->prepareUpdate(
-                'cars',
-                array(
-                    'name' => 'car_name',
-                ),
-                array(
-                    'id' => 1
-                )
-            );
+            'cars',
+            array(
+                'name' => 'car_name',
+            ),
+            array(
+                'id' => 1
+            )
+        );
 
         $this->assertEquals(
             $query->toRealSql(),
@@ -212,11 +212,11 @@ class QueryBuilderTest extends \PHPUnit_Framework_TestCase
     {
         $query = $this->adapter->createQuery();
         $adapter = $query->prepareDelete(
-                'cars',
-                array(
-                    'id' => 1
-                )
-            );
+            'cars',
+            array(
+                'id' => 1
+            )
+        );
 
         $this->assertEquals(
             $query->toRealSql(),
