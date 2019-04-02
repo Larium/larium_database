@@ -1,5 +1,7 @@
 <?php
 
+namespace Larium\Database;
+
 class Config
 {
     protected $database = array();

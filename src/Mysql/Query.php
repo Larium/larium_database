@@ -4,12 +4,18 @@
 
 namespace Larium\Database\Mysql;
 
+use Larium\Database\AdapterInterface;
 use Larium\Database\QueryInterface;
+use Menu\Iterator;
 
 /**
  * Query builder Adapter for Mysql database.
  *
  * Allows easy build of mysql queries.
+ *
+ * @method Query count(string $field, string $fieldName)
+ * @method Query sum(string $field, string $fieldName)
+ * @method Query order(array $order)
  *
  */
 class Query implements QueryInterface
@@ -80,6 +86,9 @@ class Query implements QueryInterface
 
     protected $join_conditions;
 
+    /**
+     * @var AdapterInterface|null
+     */
     protected $adapter;
 
     /**
@@ -90,13 +99,13 @@ class Query implements QueryInterface
      */
     public function __construct($object = null, $adapter = null)
     {
-        $this->object  = $object;
+        $this->object = $object;
         $this->adapter = $adapter;
     }
 
     public function toSql()
     {
-        return $this->query ?: $this->buildSql();
+        return $this->query ?: $this->build_sql();
     }
 
     public function toRealSql()
@@ -110,6 +119,9 @@ class Query implements QueryInterface
         return $sql;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getBindParams()
     {
         return $this->bind_params;
@@ -120,6 +132,9 @@ class Query implements QueryInterface
         $this->object = $object;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getObject()
     {
         return $this->object;
@@ -147,17 +162,17 @@ class Query implements QueryInterface
         $foreign_key,
         $additional = null
     ) {
-        $this->joinQuery("INNER", $join_table, $primary_key, $foreign_key, $additional);
+        $this->join_query("INNER", $join_table, $primary_key, $foreign_key, $additional);
         return $this;
     }
 
     public function leftJoin($join_table, $primary_key, $foreign_key, $additional = null)
     {
-        $this->joinQuery("LEFT", $join_table, $primary_key, $foreign_key, $additional);
+        $this->join_query("LEFT", $join_table, $primary_key, $foreign_key, $additional);
         return $this;
     }
 
-    private function joinQuery(
+    private function join_query(
         $join_type,
         $join_table,
         $primary_key,
@@ -184,9 +199,10 @@ class Query implements QueryInterface
      * Select fields from a table.
      *
      * @param array|string $args the fields to select in array or comma(,)
-     *                           seperated string
+     *                           separated string
+     * @return Query
      */
-    public function select($args = "*")
+    public function select($args="*")
     {
         $args = is_array($args) ? implode(',', $args) : $args;
 
@@ -228,6 +244,11 @@ class Query implements QueryInterface
         return $this;
     }
 
+    /**
+     * @param $field
+     * @param $order
+     * @return Query
+     */
     public function orderBy($field, $order)
     {
         $this->order_by = null === $this->order_by
@@ -237,6 +258,12 @@ class Query implements QueryInterface
         return $this;
     }
 
+    /**
+     * @param $name
+     * @param $args
+     * @return Query
+     * @throws \Exception
+     */
     public function __call($name, $args)
     {
         if (in_array(strtoupper($name), $this->AGGREGATE)) {
@@ -245,6 +272,12 @@ class Query implements QueryInterface
         throw new \Exception("Invalid method ".get_class($this)."::$name");
     }
 
+    /**
+     * @param $function
+     * @param $field
+     * @param string null $as
+     * @return $this
+     */
     protected function aggregate($function, $field, $as = null)
     {
         $function = strtoupper($function);
@@ -257,7 +290,7 @@ class Query implements QueryInterface
         return $this;
     }
 
-    public function limit($count, $offset = false)
+    public function limit($count, $offset=false)
     {
         $this->limit = (int) $count;
         if ($offset !== false || null === $this->offset) {
@@ -308,8 +341,10 @@ class Query implements QueryInterface
      * @param array  $conditions
      * @param string $operator   The logical operator for conditions, AND | OR
      * @param string $comparison The comparison operator for conditions
+     *
+     * @return static
      */
-    public function where(array $conditions, $operator = 'AND', $comparison = '=')
+    public function where(array $conditions, $operator='AND', $comparison='=')
     {
         $array_keys = array_keys($conditions);
         if (reset($array_keys) === 0 &&
@@ -323,19 +358,24 @@ class Query implements QueryInterface
                 'binds' => $conditions,
                 'operator' => $operator
             );
-        } else {
+        }  else {
+
             foreach ($conditions as $key => $value) {
+
                 if (is_array($value)) {
+
                     $this->whereIn($key, $value, $operator);
                 } elseif (is_null($value)) {
+
                     $this->whereIsNull($key, $operator);
                 } else {
-                    $field = $this->getFieldWithTable($key);
+
+                    $field = $this->get_field_with_table($key);
 
                     $this->where[] = array(
-                        'query'     => "$field $comparison ?",
-                        'binds'     => array($value),
-                        'operator'  => $operator
+                        'query' => "$field $comparison ?",
+                        'binds' => array($value),
+                        'operator' => $operator
                     );
                 }
             }
@@ -344,7 +384,7 @@ class Query implements QueryInterface
         return $this;
     }
 
-    private function getFieldWithTable($string)
+    private function get_field_with_table($string)
     {
         $point = strpos($string, '.');
         if (false === $point) {
@@ -357,11 +397,11 @@ class Query implements QueryInterface
         return $field;
     }
 
-    public function whereIn($field, array $values, $operator = 'AND')
+    public function whereIn($field, array $values, $operator='AND')
     {
         $query = trim(str_repeat('?, ', count($values)), ', ');
 
-        $field = $this->getFieldWithTable($field);
+        $field = $this->get_field_with_table($field);
 
         $this->where[] = array(
             'query' => "$field IN ( $query )",
@@ -372,11 +412,11 @@ class Query implements QueryInterface
         return $this;
     }
 
-    public function whereNotIn($field, array $values, $operator = 'AND')
+    public function whereNotIn($field, array $values, $operator='AND')
     {
-        $query = trim(str_repeat('?, ', count($values)), ', ');
+        $query = trim(str_repeat('?, ',count($values)), ', ');
 
-        $field = $this->getFieldWithTable($field);
+        $field = $this->get_field_with_table($field);
 
         $this->where[] = array(
             'query' => "$field NOT IN ( $query )",
@@ -387,19 +427,19 @@ class Query implements QueryInterface
         return $this;
     }
 
-    public function andWhere(array $conditions, $comparison = '=')
+    public function andWhere(array $conditions, $comparison='=')
     {
         return $this->where($conditions, 'AND', $comparison);
     }
 
-    public function orWhere(array $conditions, $comparison = '=')
+    public function orWhere(array $conditions, $comparison='=')
     {
         return $this->where($conditions, 'OR', $comparison);
     }
 
-    public function whereIsNull($field, $operator = 'AND')
+    public function whereIsNull($field, $operator='AND')
     {
-        $field = $this->getFieldWithTable($field);
+        $field = $this->get_field_with_table($field);
 
         $this->where[] = array(
             'query' => "$field IS NULL",
@@ -410,9 +450,9 @@ class Query implements QueryInterface
         return $this;
     }
 
-    public function whereLike($field, $value, $operator = 'AND')
+    public function whereLike($field, $value, $operator='AND')
     {
-        $field = $this->getFieldWithTable($field);
+        $field = $this->get_field_with_table($field);
 
         $this->where[] = array(
             'query' => "$field like ?",
@@ -423,9 +463,9 @@ class Query implements QueryInterface
         return $this;
     }
 
-    public function whereIsNotNull($field, $operator = 'AND')
+    public function whereIsNotNull($field, $operator='AND')
     {
-        $field = $this->getFieldWithTable($field);
+        $field = $this->get_field_with_table($field);
 
         $this->where[] = array(
             'query' => "$field IS NOT NULL",
@@ -438,19 +478,19 @@ class Query implements QueryInterface
 
     /*- (Build methods) ----------------------------------------------------- */
 
-    protected function buildWhere()
+    protected function build_where()
     {
         $query = "";
 
-        foreach ($this->where as $k => $a) {
-            $query .= ($k != 0 ? $a['operator'] ." " : null) . $a['query'] . " ";
+        foreach($this->where as $k=>$a) {
+            $query .= ($k!=0 ? $a['operator'] ." " : null) . $a['query'] . " ";
             $this->bind_params = array_merge($this->bind_params, $a['binds']);
         }
 
         return trim($query);
     }
 
-    protected function buildHaving()
+    protected function build_having()
     {
 
         $this->bind_params = array_merge($this->bind_params, $this->having['binds']);
@@ -458,10 +498,10 @@ class Query implements QueryInterface
         return $this->having['query'];
     }
 
-    protected function buildSelect()
+    protected function build_select()
     {
-        if (null === $this->select) {
-            return;
+        if ($this->select === null) {
+            return null;
         }
 
         $args = $this->select;
@@ -486,7 +526,7 @@ class Query implements QueryInterface
             }
 
             if (isset($table)) {
-                // Checks for Mysql functions and don't prepend table name.
+				// Checks for Mysql functions and don't prepend table name.
                 if (preg_match('/[\w]+\(.*\)/', $column)) {
                     $select[] = $column;
                 } else {
@@ -495,18 +535,17 @@ class Query implements QueryInterface
             }
         }
 
-        $this->select = implode(', ', $select);
+        $this->select = implode(', ',$select);
 
         return $this->select;
     }
 
-    public function buildSql()
+    public function build_sql()
     {
-
         // SELECT
         $query = "SELECT ";
 
-        $query .= $this->buildSelect();
+        $query .= $this->build_select();
 
         // aggregates
         $aggr = array();
@@ -524,7 +563,7 @@ class Query implements QueryInterface
             $query .= implode(', ', $aggr);
         }
 
-        if (!empty($this->join_conditions)
+        if (  !empty($this->join_conditions)
             && null === $this->select
         ) {
             if (false === $aggregate) {
@@ -543,13 +582,12 @@ class Query implements QueryInterface
             $query .= " as ".$this->alias[$this->getTable()];
         }
 
-        if (!empty($this->join_conditions)) {
+        if (!empty($this->join_conditions))
             $query .= " " . implode(" ", $this->join_conditions);
-        }
 
         //WHERE
         if (!empty($this->where)) {
-            $query .= " WHERE {$this->buildWhere()}";
+            $query .= " WHERE {$this->build_where()}";
         }
 
         //GROUP
@@ -564,7 +602,7 @@ class Query implements QueryInterface
 
         // HAVING
         if (!empty($this->having)) {
-            $query .= " HAVING {$this->buildHaving()}";
+            $query .= " HAVING {$this->build_having()}";
         }
 
         //LIMIT
@@ -579,27 +617,40 @@ class Query implements QueryInterface
 
     /*- (Fetching methods) ------------------------------------------------- */
 
+    /**
+     * @param null $hydration
+     * @return \Iterator
+     */
     public function fetchAll($hydration = null)
     {
-        return $this->fetchData('all', $hydration);
+        return $this->fetch_data('all', $hydration);
     }
 
+    /**
+     * @param null $hydration
+     * @return mixed
+     */
     public function fetch($hydration = null)
     {
-        return $this->fetchData('one', $hydration);
+        return $this->fetch_data('one', $hydration);
     }
 
-    protected function fetchData($mode, $hydration = null)
+    /**
+     * @param $mode
+     * @param null $hydration
+     * @return \Iterator|mixed
+     */
+    protected function fetch_data($mode, $hydration = null)
     {
-        $this->buildSql();
+        $this->build_sql();
 
         $iterator = $this->adapter->execute($this, 'Load', $hydration);
 
         if ('all' == $mode) {
             return $iterator;
-        } elseif ('one' == $mode) {
-            return $iterator->current();
         }
+
+        return $iterator->current();
     }
 
     public function execute($query, array $bind_params = array())
@@ -619,7 +670,7 @@ class Query implements QueryInterface
      * @param array  $params an array with keys as fields of table and values
      *                       as the values ti insert into.
      * @access public
-     * @return int Last insert id.
+     * @return \Iterator
      */
     public function insert($table, array $params)
     {
@@ -632,16 +683,16 @@ class Query implements QueryInterface
      * @param string $table
      * @param array $params
      * @access public
-     * @return Larium\Database\AdapterInterface
+     * @return AdapterInterface
      */
     public function prepareInsert($table, array $params)
     {
         $ks = array_keys($params);
-        foreach ($ks as $index => $key) {
+        foreach($ks as $index=>$key) {
             $ks[$index] = $this->apostrophe($key);
         }
         $keys = implode(', ', $ks);
-        $values = trim(str_repeat('?, ', count($params)), ', ');
+        $values = trim(str_repeat('?, ',count($params)), ', ');
         $this->query = "INSERT INTO {$this->apostrophe($table)} ({$keys}) VALUES ({$values})";
 
         $this->bind_params = $params;
@@ -672,14 +723,14 @@ class Query implements QueryInterface
      * @param array $params
      * @param array $where
      * @access public
-     * @return Larium\Database\AdapterInterface
+     * @return AdapterInterface
      */
     public function prepareUpdate($table, array $params, array $where)
     {
         $this->from($table);
 
         $data = "";
-        foreach ($params as $name => $value) {
+        foreach ($params as $name=>$value) {
             $data .= $this->apostrophe($name) . " = ?, ";
         }
         $data = rtrim($data, ", ");
@@ -690,7 +741,7 @@ class Query implements QueryInterface
             $this->where($where);
         }
 
-        $where = $this->buildWhere();
+        $where = $this->build_where();
 
         $this->query = "UPDATE {$this->apostrophe($table)} SET {$data} WHERE {$where}";
 
@@ -703,18 +754,22 @@ class Query implements QueryInterface
             ->execute($this, 'Destroy');
     }
 
+    /**
+     * @param string $table
+     * @param array $where
+     * @return AdapterInterface
+     */
     public function prepareDelete($table, array $where)
     {
-
         $this->from($table);
 
         if (!empty($where)) {
             $this->where($where);
         }
 
-        $where = $this->buildWhere();
+        $where = $this->build_where();
 
-        $this->query = "DELETE FROM {$this->apostrophe($table)} WHERE {$where}";
+        $this->query = sprintf("DELETE FROM %s WHERE %s", $this->apostrophe($table), $where);
 
         return $this->adapter;
     }
@@ -729,15 +784,15 @@ class Query implements QueryInterface
         return "`{$table}`";
     }
 
-    public function paginate($request, $per_page = 20)
+    public function paginate($query, $uri, $per_page = 20): Paginator
     {
         $total_query = clone $this;
-        $total = $total_query->count('*', 'total_count')->fetch()->total_count;
-        $page = Paginator::page($request, $total, $per_page);
+        $total = $total_query->count('*','total_count')->fetch()->total_count;
+        $page = Paginator::page($query, $total, $per_page);
 
         $results = $this->forPage($page, $per_page)->fetchAll();
 
-        return Paginator::make($results, $total, $per_page, $request);
+        return Paginator::make($results, $total, $per_page, $query, $uri);
     }
 
     public function forPage($page, $per_page)

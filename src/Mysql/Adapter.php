@@ -82,8 +82,9 @@ class Adapter implements AdapterInterface
 
     /**
      * Returns the current connection between PHP and MySQL database.
+     * @throws \Exception
      *
-     * @return \mysli
+     * @return \mysqli
      */
     public function getConnection()
     {
@@ -96,6 +97,7 @@ class Adapter implements AdapterInterface
 
     /**
      * {@inheritdoc}
+     * @throws \Exception
      */
     public function connect()
     {
@@ -136,7 +138,7 @@ class Adapter implements AdapterInterface
 
     /**
      * {@inheritdoc}
-     *
+     * @throws \Exception
      * @return int|ResultIterator
      */
     public function execute(QueryInterface $query, $action='Load', $hydration = null)
@@ -212,7 +214,7 @@ class Adapter implements AdapterInterface
 
     /**
      * {@inheritdoc}
-     *
+     * @throws \Exception
      * @return int
      */
     public function getInsertId($stmt = null)
@@ -220,6 +222,10 @@ class Adapter implements AdapterInterface
         return (int) ($stmt ? $stmt->insert_id : $this->getConnection()->insert_id);
     }
 
+    /**
+     * @param string $value
+     * @throws \Exception
+     */
     public function sanitize(&$value)
     {
         if (null === $value) {
@@ -234,8 +240,6 @@ class Adapter implements AdapterInterface
 
     public function quote($string)
     {
-        //if (substr_count($string, "'") == 2) return $string;
-
         return "'" . $string . "'";
     }
 

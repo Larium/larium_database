@@ -5,15 +5,16 @@
 namespace Larium\Database\Mysql;
 
 use Larium\Database\AdapterFactory;
+use Larium\Database\Config;
+use PHPUnit\Framework\TestCase;
 
-class QueryBuilderTest extends \PHPUnit_Framework_TestCase
+class QueryBuilderTest extends TestCase
 {
-
     protected $adapter;
 
     public function setUp()
     {
-        $config = (new \Config())->getDatabase();
+        $config = (new Config())->getDatabase();
 
         $this->adapter = AdapterFactory::create($config);
     }

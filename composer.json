@@ -11,13 +11,18 @@
         }
     ],
     "require": {
-        "php": ">=5.3",
+        "php": ">=7.2",
         "ext-mysqli": "*"
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "autoload": {
-        "psr-0": {
-            "Larium\\": "src/"
+        "psr-4": {
+            "Larium\\Database\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Larium\\Database\\": "test/"
         }
     }
 }

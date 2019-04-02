@@ -2,5 +2,5 @@ vendor/*
 composer.lock
 test/log/*
 test/database.conf.php
-src/Larium/Database/PdoIterator.php
+src/PdoIterator.php
 
